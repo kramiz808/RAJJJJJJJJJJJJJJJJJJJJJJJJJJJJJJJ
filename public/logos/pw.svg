@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="pw_bg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#122a18"/>
+      <stop offset="60%" stop-color="#09140c"/>
+      <stop offset="100%" stop-color="#040906"/>
+    </radialGradient>
+    <filter id="pw_glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Outer Ring with Neon Glow -->
+  <circle cx="100" cy="100" r="94" fill="none" stroke="#00e676" stroke-width="4" filter="url(#pw_glow)"/>
+  <circle cx="100" cy="100" r="90" fill="url(#pw_bg)" stroke="#004d26" stroke-width="2"/>
+  <circle cx="100" cy="100" r="82" fill="none" stroke="#00e676" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
+  <!-- Atom Orbitals -->
+  <ellipse cx="100" cy="88" rx="46" ry="16" fill="none" stroke="#00e676" stroke-width="2" transform="rotate(-30 100 88)" opacity="0.7"/>
+  <ellipse cx="100" cy="88" rx="46" ry="16" fill="none" stroke="#00e676" stroke-width="2" transform="rotate(30 100 88)" opacity="0.7"/>
+  <circle cx="100" cy="88" r="7" fill="#00e676" filter="url(#pw_glow)"/>
+  <!-- Bold PW Initials -->
+  <text x="100" y="103" text-anchor="middle" font-family="'Orbitron', system-ui, -apple-system, sans-serif" font-weight="900" font-size="34" fill="#ffffff" filter="url(#pw_glow)" letter-spacing="1">PW</text>
+  <!-- Platform Name Arc / Pill -->
+  <rect x="22" y="142" width="156" height="26" rx="13" fill="#000000" fill-opacity="0.85" stroke="#00e676" stroke-width="1.5"/>
+  <text x="100" y="159" text-anchor="middle" font-family="'Orbitron', system-ui, sans-serif" font-weight="800" font-size="11" fill="#00e676" letter-spacing="1.5">PHYSICS WALLAH</text>
+</svg>

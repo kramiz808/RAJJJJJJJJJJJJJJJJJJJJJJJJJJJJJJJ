@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="g_unacademy-online" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#2962FF" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0b162e" stop-opacity="1" />
+    </radialGradient>
+    <filter id="f_unacademy-online" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <rect x="6" y="6" width="108" height="108" rx="28" fill="url(#g_unacademy-online)" stroke="#2962FF" stroke-width="2.5" />
+  <circle cx="60" cy="54" r="34" fill="#000000" fill-opacity="0.4" stroke="#2962FF" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="60" y="62" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="36" fill="#448AFF" filter="url(#f_unacademy-online)" letter-spacing="-0.5">UA</text>
+  <rect x="18" y="94" width="84" height="14" rx="7" fill="#2962FF" fill-opacity="0.2" />
+  <text x="60" y="104" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="7" fill="#448AFF" letter-spacing="0.5">UNACADEMY ONLINE</text>
+</svg>

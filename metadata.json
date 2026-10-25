@@ -1,0 +1,9 @@
+{
+  "name": "Remix studentstudy",
+  "description": "Student Study — 100% free study platform with batches, live lectures, notes, and direct streams across top Indian coaching platforms.",
+  "requestFeedback": false,
+  "userFacing": true,
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
