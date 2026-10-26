@@ -12,6 +12,8 @@ const PLATFORM_DOMAINS: Record<string, string> = {
   "ua-off": "unacademy.com",
   ac: "apnacollege.in",
   vb: "vibrantacademy.com",
+  vg: "vidyagram.com",
+  sf: "scienceandfun.live",
   pi: "learnxpw.site",
   ms: "youtube.com",
 };
@@ -19,11 +21,18 @@ const PLATFORM_DOMAINS: Record<string, string> = {
 export function PlatformLogo({ p, size = 68 }: { p: Platform; size?: number }) {
   const [failed, setFailed] = useState(false);
 
-  // Exact match for user requested Next Toppers rabbit badge
-  const badgeSrc =
-    p.id === "nt"
-      ? "/assets/aistudio/Next_Toppers_Rabbit_Badge_5a9113a9.png"
-      : `/logos/${p.id}.svg`;
+  const authenticLogos: Record<string, string> = {
+    nt: "/assets/aistudio/Next_Toppers_Rabbit_Badge_5a9113a9.png",
+    mj: "/assets/aistudio/download__1__0764ca0f.jpg",
+    vg: "/assets/aistudio/download_fd78946f.jpg",
+    rwa: "/assets/aistudio/download__4__26d8f1a2.jpg",
+    sa: "/assets/aistudio/download__5__faaf0c65.jpg",
+    sf: "/assets/aistudio/download__6__b5e319c8.jpg",
+    pw: "/assets/aistudio/download_3b57ed4f.png",
+    pi: "/assets/aistudio/images_6d0735dd.png",
+  };
+
+  const badgeSrc = authenticLogos[p.id] || `/logos/${p.id}.svg`;
 
   return (
     <div

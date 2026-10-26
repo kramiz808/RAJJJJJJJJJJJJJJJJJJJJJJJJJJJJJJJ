@@ -228,7 +228,7 @@ function StudyHub() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-primary">Saare Platforms</h2>
             <span className="font-mono text-xs text-muted-foreground">
-              10+ Direct Portals Available
+              15+ Direct Real APIs & Portals
             </span>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">

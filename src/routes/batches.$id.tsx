@@ -29,6 +29,7 @@ import {
   getLiveSchedule,
   getPiCategoryBatches,
   REAL_PI_CATEGORIES,
+  REAL_USER_LIVE_STREAM,
   resolveVideoStream,
   type Batch,
   type ContentItem,
@@ -125,13 +126,20 @@ function BatchesPage() {
     }
   };
 
+  const [liveSubTab, setLiveSubTab] = useState<"now" | "upcoming" | "completed">("now");
+
   const currentlyLive = useMemo(
     () => liveSessions.filter((s) => s.isLive || s.status === "live"),
     [liveSessions],
   );
 
   const upcomingSessions = useMemo(
-    () => liveSessions.filter((s) => !s.isLive && s.status !== "live"),
+    () => liveSessions.filter((s) => s.status === "scheduled" || (!s.isLive && s.status !== "completed")),
+    [liveSessions],
+  );
+
+  const completedSessions = useMemo(
+    () => liveSessions.filter((s) => s.status === "completed"),
     [liveSessions],
   );
 
@@ -287,9 +295,13 @@ function BatchesPage() {
             isPdf: resolved.isPdf,
           });
         } else {
-          // Guaranteed fallback live stream
+          // Strictly isolate live stream to Mission Jeet
+          const fallbackUrl =
+            id === "mj"
+              ? REAL_USER_LIVE_STREAM
+              : "https://d3uvoof8mq1fao.cloudfront.net/file_library/videos/channel_vod_non_drm_hls/4864061/178906095188442352352/178906095188442352352_2352352.m3u8";
           setPlayerStream({
-            url: "https://d3uvoof8mq1fao.cloudfront.net/file_library/videos/channel_vod_non_drm_hls/4864061/178906095188442352352/178906095188442352352_2352352.m3u8",
+            url: fallbackUrl,
             title: item.title,
             isPdf: false,
           });
@@ -790,21 +802,51 @@ function BatchesPage() {
                       <span>REAL-TIME LIVE CLASSES & BROADCASTS</span>
                     </div>
                     <h2 className="font-display text-xl font-bold text-white">
-                      Live Broadcast & Upcoming Video Schedule
+                      Live Broadcast & Video Schedule Hub
                     </h2>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Abhi chal rahe live sessions aur aane wali classes ka poora time-table.
+                      Live class, aane wale videos ka schedule aur samapt live lectures with DPPs.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <span className="rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 font-bold text-red-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                      {currentlyLive.length} Live Now
-                    </span>
-                    <span className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 font-bold text-primary flex items-center gap-1.5">
+
+                  {/* 3 Interactive Tab Selector */}
+                  <div className="flex items-center gap-1.5 rounded-lg border border-border/40 bg-black/60 p-1 font-mono text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setLiveSubTab("now")}
+                      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 font-bold transition-colors ${
+                        liveSubTab === "now"
+                          ? "bg-red-600 text-white shadow-sm"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
+                      Live Now ({currentlyLive.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLiveSubTab("upcoming")}
+                      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 font-bold transition-colors ${
+                        liveSubTab === "upcoming"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
                       <Clock className="h-3.5 w-3.5" />
-                      {upcomingSessions.length} Upcoming
-                    </span>
+                      Upcoming ({upcomingSessions.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLiveSubTab("completed")}
+                      className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 font-bold transition-colors ${
+                        liveSubTab === "completed"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Completed & DPP ({completedSessions.length})
+                    </button>
                   </div>
                 </div>
 
@@ -815,144 +857,323 @@ function BatchesPage() {
                   </div>
                 ) : (
                   <>
-                    {/* SECTION 1: 🔴 ABHI CHAL RAHA HAI */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
-                        <h3 className="font-display text-base font-bold text-white tracking-wide">
-                          🔴 ABHI CHAL RAHA HAI (STREAMING NOW)
-                        </h3>
-                      </div>
-
-                      {currentlyLive.length === 0 ? (
-                        <div className="rounded-xl border border-border/40 bg-[#0a0d0b] p-6 text-center font-mono text-xs text-muted-foreground">
-                          Abhi is batch me koi live class active nahi hai. Neeche aane wali classes
-                          ka schedule dekhein 👇
+                    {/* SUB-TAB 1: 🔴 ABHI LIVE CHAL RAHA HAI */}
+                    {liveSubTab === "now" && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
+                            <h3 className="font-display text-base font-bold text-white tracking-wide">
+                              🔴 LIVE NOW (ABHI CHAL RAHA HAI)
+                            </h3>
+                          </div>
+                          <span className="font-mono text-xs text-zinc-400">
+                            {id === "mj" ? "Mission Jeet Official Live Broadcast" : "Platform Live Stream"}
+                          </span>
                         </div>
-                      ) : (
-                        currentlyLive.map((session) => (
-                          <div
-                            key={session.id}
-                            className="rounded-xl border-2 border-red-500/40 bg-gradient-to-r from-red-950/30 via-[#120909] to-black p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-5 shadow-[0_0_25px_rgba(239,68,68,0.18)]"
-                          >
-                            <div className="space-y-2 flex-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-2.5 py-0.5 font-mono text-[11px] font-bold text-white tracking-wider animate-pulse">
-                                  <Radio className="h-3 w-3" /> LIVE NOW
-                                </span>
-                                {session.subject && (
-                                  <span className="rounded bg-primary/10 border border-primary/30 px-2 py-0.5 font-mono text-[11px] text-primary font-semibold">
-                                    {session.subject}
-                                  </span>
-                                )}
-                                <span className="font-mono text-[10px] text-emerald-400">
-                                  1080p HD Direct Player
-                                </span>
-                              </div>
 
-                              <h4 className="font-bold text-base sm:text-lg text-white">
-                                {session.title}
-                              </h4>
-
-                              <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground">
-                                {session.teacher && (
-                                  <span className="flex items-center gap-1.5 text-zinc-200">
-                                    <User className="h-3.5 w-3.5 text-primary" /> {session.teacher}
-                                  </span>
-                                )}
-                                <span className="flex items-center gap-1 text-zinc-400">
-                                  <Clock className="h-3.5 w-3.5" />
-                                  {session.startTime || "Started recently"}
-                                </span>
-                              </div>
+                        {currentlyLive.length === 0 ? (
+                          <div className="rounded-xl border border-border/40 bg-[#0a0d0b] p-8 text-center space-y-3">
+                            <div className="h-10 w-10 mx-auto rounded-full bg-red-950/40 border border-red-500/30 flex items-center justify-center text-red-400">
+                              <Radio className="h-5 w-5" />
                             </div>
-
-                            <div className="flex items-center gap-3 shrink-0">
+                            <h4 className="font-display text-base font-bold text-zinc-200">
+                              Abhi is batch me koi live class active nahi hai
+                            </h4>
+                            <p className="font-mono text-xs text-muted-foreground max-w-md mx-auto">
+                              Agli class shuru hone par yahan direct live player chalega. Aap aane wali
+                              classes ka schedule dekh sakte hain ya completed classes padh sakte hain.
+                            </p>
+                            <div className="pt-2 flex justify-center gap-3">
                               <Button
-                                size="default"
-                                onClick={() =>
-                                  setPlayerStream({
-                                    url:
-                                      session.streamUrl ||
-                                      activeBatch.streamUrl ||
-                                      "https://d3uvoof8mq1fao.cloudfront.net/file_library/videos/channel_vod_non_drm_hls/4864061/178906095188442352352/178906095188442352352_2352352.m3u8",
-                                    title: `${session.title} — Live Stream`,
-                                    isLive: true,
-                                  })
-                                }
-                                className="bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold gap-2 px-5 py-2.5 shadow-lg shadow-red-900/30 border-0"
+                                size="sm"
+                                variant="neon"
+                                onClick={() => setLiveSubTab("upcoming")}
+                                className="font-mono text-xs gap-1.5"
                               >
-                                <Play className="h-4 w-4 fill-current" /> ABHI LIVE DEKHEIN
+                                <Clock className="h-3.5 w-3.5" /> Upcoming Schedule Dekhein
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="cyber"
+                                onClick={() => setLiveSubTab("completed")}
+                                className="font-mono text-xs gap-1.5"
+                              >
+                                <FileText className="h-3.5 w-3.5" /> Completed Lectures & DPP
                               </Button>
                             </div>
                           </div>
-                        ))
-                      )}
-                    </div>
-
-                    {/* SECTION 2: ⏳ UPCOMING KON VIDEO AANE WALA HAI */}
-                    <div className="space-y-3 pt-4">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <h3 className="font-display text-base font-bold text-white tracking-wide">
-                          ⏳ UPCOMING SCHEDULE (KON VIDEO AANE WALA HAI)
-                        </h3>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                        {upcomingSessions.map((session) => {
-                          const isSaved = reminders.includes(session.id);
-                          return (
+                        ) : (
+                          currentlyLive.map((session) => (
                             <div
                               key={session.id}
-                              className="rounded-xl border border-border/40 bg-[#0c100d] p-4 flex flex-col justify-between gap-3 hover:border-primary/40 transition-colors"
+                              className="rounded-xl border-2 border-red-500/50 bg-gradient-to-r from-red-950/40 via-[#120909] to-black p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-5 shadow-[0_0_30px_rgba(239,68,68,0.25)]"
                             >
-                              <div className="space-y-1.5">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="inline-flex items-center gap-1.5 rounded bg-primary/10 border border-primary/30 px-2.5 py-0.5 font-mono text-[11px] font-bold text-primary">
-                                    <Calendar className="h-3 w-3" />
-                                    {session.startTime || "Scheduled"}
+                              <div className="space-y-2 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-2.5 py-0.5 font-mono text-[11px] font-bold text-white tracking-wider animate-pulse">
+                                    <Radio className="h-3 w-3" /> LIVE BROADCAST
                                   </span>
                                   {session.subject && (
-                                    <span className="font-mono text-[10px] text-muted-foreground">
+                                    <span className="rounded bg-primary/10 border border-primary/30 px-2 py-0.5 font-mono text-[11px] text-primary font-semibold">
                                       {session.subject}
                                     </span>
                                   )}
+                                  <span className="font-mono text-[10px] text-emerald-400">
+                                    1080p Ultra HD Direct
+                                  </span>
                                 </div>
 
-                                <h4 className="font-semibold text-sm text-zinc-100 line-clamp-2">
+                                <h4 className="font-bold text-base sm:text-lg text-white">
                                   {session.title}
                                 </h4>
 
-                                {session.teacher && (
-                                  <div className="flex items-center gap-1.5 font-mono text-xs text-zinc-400">
-                                    <User className="h-3 w-3 text-primary" />
-                                    <span>Educator: {session.teacher}</span>
-                                  </div>
-                                )}
+                                <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted-foreground">
+                                  {session.teacher && (
+                                    <span className="flex items-center gap-1.5 text-zinc-200">
+                                      <User className="h-3.5 w-3.5 text-primary" /> {session.teacher}
+                                    </span>
+                                  )}
+                                  <span className="flex items-center gap-1 text-zinc-400">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    {session.startTime || "Streaming Now"}
+                                  </span>
+                                </div>
                               </div>
 
-                              <div className="flex items-center justify-between border-t border-border/20 pt-2.5">
-                                <span className="font-mono text-[10px] text-zinc-400">
-                                  {session.endTime
-                                    ? `Ends: ${session.endTime}`
-                                    : "HD Interactive Class"}
-                                </span>
+                              <div className="flex items-center gap-3 shrink-0">
                                 <Button
-                                  size="sm"
-                                  variant={isSaved ? "neon" : "ghost"}
-                                  onClick={() => toggleReminder(session.id, session.title)}
-                                  className="h-7 px-2.5 font-mono text-[11px] gap-1"
+                                  size="default"
+                                  onClick={() =>
+                                    setPlayerStream({
+                                      url:
+                                        session.streamUrl ||
+                                        activeBatch.streamUrl ||
+                                        (id === "mj"
+                                          ? REAL_USER_LIVE_STREAM
+                                          : "https://d3uvoof8mq1fao.cloudfront.net/file_library/videos/channel_vod_non_drm_hls/4864061/178906095188442352352/178906095188442352352_2352352.m3u8"),
+                                      title: `${session.title} — Live Stream`,
+                                      isLive: true,
+                                    })
+                                  }
+                                  className="bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold gap-2 px-5 py-2.5 shadow-lg shadow-red-900/40 border-0"
                                 >
-                                  <Bell className={`h-3 w-3 ${isSaved ? "fill-current" : ""}`} />
-                                  {isSaved ? "Reminder Set" : "Notify Me"}
+                                  <Play className="h-4 w-4 fill-current" /> ABHI LIVE DEKHEIN
                                 </Button>
                               </div>
                             </div>
-                          );
-                        })}
+                          ))
+                        )}
                       </div>
-                    </div>
+                    )}
+
+                    {/* SUB-TAB 2: ⏳ AANE WALI LIVE CLASSES (UPCOMING SCHEDULE) */}
+                    {liveSubTab === "upcoming" && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-primary" />
+                            <h3 className="font-display text-base font-bold text-white tracking-wide">
+                              ⏳ UPCOMING SCHEDULE (AANE WALI CLASSES)
+                            </h3>
+                          </div>
+                          <span className="font-mono text-xs text-muted-foreground">
+                            {upcomingSessions.length} Classes Scheduled
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                          {upcomingSessions.map((session) => {
+                            const isSaved = reminders.includes(session.id);
+                            return (
+                              <div
+                                key={session.id}
+                                className="rounded-xl border border-border/40 bg-[#0c100d] p-4 flex flex-col justify-between gap-3 hover:border-primary/40 transition-colors"
+                              >
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="inline-flex items-center gap-1.5 rounded bg-primary/10 border border-primary/30 px-2.5 py-0.5 font-mono text-[11px] font-bold text-primary">
+                                      <Calendar className="h-3 w-3" />
+                                      {session.startTime || "Scheduled"}
+                                    </span>
+                                    {session.subject && (
+                                      <span className="font-mono text-[10px] text-muted-foreground">
+                                        {session.subject}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <h4 className="font-semibold text-sm text-zinc-100 line-clamp-2">
+                                    {session.title}
+                                  </h4>
+
+                                  {session.teacher && (
+                                    <div className="flex items-center gap-1.5 font-mono text-xs text-zinc-400">
+                                      <User className="h-3 w-3 text-primary" />
+                                      <span>Educator: {session.teacher}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center justify-between border-t border-border/20 pt-2.5">
+                                  <span className="font-mono text-[10px] text-zinc-400">
+                                    {session.endTime
+                                      ? `Ends: ${session.endTime}`
+                                      : "HD Interactive Class"}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant={isSaved ? "neon" : "ghost"}
+                                    onClick={() => toggleReminder(session.id, session.title)}
+                                    className="h-7 px-2.5 font-mono text-[11px] gap-1"
+                                  >
+                                    <Bell className={`h-3 w-3 ${isSaved ? "fill-current" : ""}`} />
+                                    {isSaved ? "Reminder Set" : "Notify Me"}
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* SUB-TAB 3: 📼 SAMAPT LIVE - RECORDED CONTENT MEIN JUDE LECTURES, NOTES & DPP */}
+                    {liveSubTab === "completed" && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-emerald-400" />
+                            <h3 className="font-display text-base font-bold text-white tracking-wide">
+                              📼 SAMAPT LIVE — BATCH CONTENT MEIN JUDA (WITH NOTES & DPP)
+                            </h3>
+                          </div>
+                          <span className="font-mono text-xs text-emerald-400">
+                            Recorded + Notes + DPP Attached
+                          </span>
+                        </div>
+
+                        <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-xs text-zinc-300 font-mono">
+                          💡 <strong>Automatic Archival:</strong> Jab live class khatm hoti hai, wo turant
+                          yahan aur batch ke Content tab me recorded lecture, DPP problem sheet aur
+                          hastlikhit notes ke saath jud jati hai.
+                        </div>
+
+                        <div className="space-y-3">
+                          {completedSessions.length === 0 ? (
+                            <div className="rounded-xl border border-border/40 bg-[#0a0d0b] p-6 text-center font-mono text-xs text-muted-foreground">
+                              Abhi koi completed session archive nahi hai.
+                            </div>
+                          ) : (
+                            completedSessions.map((session) => (
+                              <div
+                                key={session.id}
+                                className="rounded-xl border border-border/40 bg-[#0c120e] p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:border-emerald-500/40 transition-colors"
+                              >
+                                <div className="space-y-1.5 flex-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400">
+                                      CONCLUDED & ARCHIVED
+                                    </span>
+                                    {session.subject && (
+                                      <span className="font-mono text-[10px] text-zinc-400">
+                                        {session.subject}
+                                      </span>
+                                    )}
+                                    {session.duration && (
+                                      <span className="font-mono text-[10px] text-zinc-400">
+                                        ⏱️ {session.duration}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <h4 className="font-semibold text-sm sm:text-base text-zinc-100">
+                                    {session.title}
+                                  </h4>
+
+                                  <div className="flex items-center gap-3 text-xs font-mono text-muted-foreground">
+                                    {session.teacher && (
+                                      <span className="flex items-center gap-1 text-zinc-300">
+                                        <User className="h-3 w-3 text-emerald-400" /> {session.teacher}
+                                      </span>
+                                    )}
+                                    <span className="text-zinc-400">{session.startTime}</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2 shrink-0">
+                                  {/* 1. Watch Recording */}
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      setPlayerStream({
+                                        url:
+                                          session.recordingUrl ||
+                                          session.streamUrl ||
+                                          (id === "mj"
+                                            ? REAL_USER_LIVE_STREAM
+                                            : "https://d3uvoof8mq1fao.cloudfront.net/file_library/videos/channel_vod_non_drm_hls/4864061/178906095188442352352/178906095188442352352_2352352.m3u8"),
+                                        title: `${session.title} — Recorded Video`,
+                                        isPdf: false,
+                                      })
+                                    }
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs gap-1.5"
+                                  >
+                                    <Play className="h-3.5 w-3.5 fill-current" /> Watch Video
+                                  </Button>
+
+                                  {/* 2. View Notes PDF */}
+                                  {session.notesUrl && (
+                                    <Button
+                                      size="sm"
+                                      variant="cyber"
+                                      onClick={() =>
+                                        setPlayerStream({
+                                          url: session.notesUrl!,
+                                          title: `${session.title} — Class Notes (PDF)`,
+                                          isPdf: true,
+                                        })
+                                      }
+                                      className="font-mono text-xs gap-1.5 border-amber-500/30 text-amber-300 hover:text-amber-200"
+                                    >
+                                      <FileText className="h-3.5 w-3.5" /> Notes PDF
+                                    </Button>
+                                  )}
+
+                                  {/* 3. View DPP PDF */}
+                                  {session.dppUrl && (
+                                    <Button
+                                      size="sm"
+                                      variant="cyber"
+                                      onClick={() =>
+                                        setPlayerStream({
+                                          url: session.dppUrl!,
+                                          title: `${session.title} — Daily Practice Problem (DPP PDF)`,
+                                          isPdf: true,
+                                        })
+                                      }
+                                      className="font-mono text-xs gap-1.5 border-primary/30 text-primary hover:text-emerald-300"
+                                    >
+                                      <FileText className="h-3.5 w-3.5" /> DPP Sheet
+                                    </Button>
+                                  )}
+
+                                  {/* 4. Go to Content Tab */}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleTabChange("content")}
+                                    className="font-mono text-xs text-zinc-400 hover:text-white"
+                                  >
+                                    In Content →
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

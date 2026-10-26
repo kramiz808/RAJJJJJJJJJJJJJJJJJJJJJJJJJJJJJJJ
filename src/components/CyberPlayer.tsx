@@ -83,8 +83,18 @@ export function CyberPlayer({
   const [qualityList, setQualityList] = useState<{ id: number; height: number }[]>([]);
   const [quality, setQuality] = useState(-1);
   const [time, setTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [cssFullscreen, setCssFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      if (!document.fullscreenElement) {
+        setCssFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
 
   const ytEmbed = getYouTubeEmbedUrl(src);
   const isDocument = isPdf || src.toLowerCase().endsWith(".pdf");
@@ -240,11 +250,23 @@ export function CyberPlayer({
   };
 
   const fullscreen = () => {
-    if (!boxRef.current) return;
     if (document.fullscreenElement) {
       void document.exitFullscreen().catch(() => {});
+      setCssFullscreen(false);
+      return;
+    }
+    if (boxRef.current?.requestFullscreen) {
+      boxRef.current
+        .requestFullscreen()
+        .then(() => {
+          setCssFullscreen(false);
+        })
+        .catch(() => {
+          // Native fullscreen prevented (e.g. iframe permissions or iOS); fallback to CSS landscape fullscreen
+          setCssFullscreen((prev) => !prev);
+        });
     } else {
-      void boxRef.current.requestFullscreen().catch(() => {});
+      setCssFullscreen((prev) => !prev);
     }
   };
 
@@ -290,7 +312,13 @@ export function CyberPlayer({
   // If YouTube Video
   if (ytEmbed) {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-primary/40 bg-[#020604] text-white shadow-2xl">
+      <div
+        className={`relative overflow-hidden border border-primary/40 bg-[#020604] text-white shadow-2xl transition-all ${
+          cssFullscreen
+            ? "fixed inset-0 z-50 h-screen w-screen rounded-none border-0 aspect-auto"
+            : "aspect-video w-full rounded-xl"
+        }`}
+      >
         <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between bg-gradient-to-b from-black/90 to-transparent p-3">
           <div className="flex items-center gap-3">
             {onBack && (
@@ -300,14 +328,24 @@ export function CyberPlayer({
             )}
             <span className="truncate font-display text-sm font-bold text-primary">{title}</span>
           </div>
-          <a
-            href={src}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-2.5 py-1 font-mono text-[11px] text-primary hover:bg-primary/20"
-          >
-            YouTube <ExternalLink className="h-3 w-3" />
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Toggle Fullscreen"
+              onClick={fullscreen}
+              className="rounded p-1 text-zinc-300 hover:text-white hover:bg-white/10"
+            >
+              <Maximize className="h-4 w-4" />
+            </button>
+            <a
+              href={src}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-2.5 py-1 font-mono text-[11px] text-primary hover:bg-primary/20"
+            >
+              YouTube <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
         </div>
         <iframe
           src={ytEmbed}
@@ -323,7 +361,11 @@ export function CyberPlayer({
   return (
     <div
       ref={boxRef}
-      className="relative aspect-video w-full overflow-hidden rounded-xl border border-primary/40 bg-[#020604] text-white shadow-2xl select-none"
+      className={`relative select-none overflow-hidden border border-primary/40 bg-[#020604] text-white shadow-2xl transition-all ${
+        cssFullscreen
+          ? "fixed inset-0 z-50 h-screen w-screen rounded-none border-0 aspect-auto"
+          : "aspect-video w-full rounded-xl"
+      }`}
     >
       <video
         ref={videoRef}

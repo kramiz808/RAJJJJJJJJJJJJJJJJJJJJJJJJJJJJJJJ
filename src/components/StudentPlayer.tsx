@@ -78,19 +78,44 @@ export function StudentPlayer({ src, title = "Live Class", poster }: Props) {
     if (videoRef.current) videoRef.current.playbackRate = next;
   };
 
+  const [cssFullscreen, setCssFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) {
+        setCssFullscreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
   const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+      setCssFullscreen(false);
+      return;
+    }
+    if (containerRef.current?.requestFullscreen) {
+      containerRef.current
+        .requestFullscreen()
+        .then(() => setCssFullscreen(false))
+        .catch(() => {
+          setCssFullscreen((prev) => !prev);
+        });
     } else {
-      document.exitFullscreen().catch(() => {});
+      setCssFullscreen((prev) => !prev);
     }
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative flex h-full w-full flex-col bg-black overflow-hidden select-none"
+      className={`relative flex select-none flex-col overflow-hidden bg-black transition-all ${
+        cssFullscreen
+          ? "fixed inset-0 z-50 h-screen w-screen"
+          : "h-full w-full"
+      }`}
     >
       {/* Student Study Live Watermark */}
       <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded bg-black/70 px-2.5 py-1 font-mono text-xs font-bold text-primary backdrop-blur border border-primary/30">

@@ -83,7 +83,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Student Study — Free Study Platform" },
-      { name: "description", content: "100% free, ad-free study platform for Indian students." },
+      {
+        name: "description",
+        content:
+          "Student Study — 100% free study platform with batches, live lectures, notes, and direct streams across top Indian coaching platforms.",
+      },
+      { property: "og:title", content: "Student Study — Free Study Platform" },
+      {
+        property: "og:description",
+        content:
+          "Student Study — 100% free study platform with batches, live lectures, notes, and direct streams across top Indian coaching platforms.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
